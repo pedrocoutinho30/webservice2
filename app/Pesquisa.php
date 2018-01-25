@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Model;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Input;
+
 
 class Pesquisa extends Model
 {
@@ -38,39 +40,10 @@ class Pesquisa extends Model
         'updated_at'
     ];
 
-    public function pesquisar()
-    {
-        $nomeRest = Input::get('nomeRest');
-        $local = Input::get('local');
-        $preco = Input::get('preco');
-        $ementa = Input::get('ementa');
-        $tipoComida = Input::get('tipoComida');
-        $horario = Input::get('horario');
+
 
 /*
-        $pesquisa = Produtos::where('erp_status', 'like', '%' . $status . '%')
-            ->orWhere('erp_cost', 'like', '%' . $texto . '%')
-            ->orWhere('erp_productid', 'like', '%' . $texto . '%')
-            ->orWhereHas('descricao', function ($query) use ($texto) {
-                $query->where('erp_name', 'like', '%' . $texto . '%');
-            })
-            ->orderBy('erp_status')
-            ->paginate(20);
-*/
-    }
 
-    public static function getUrl(Request $request){
-        $restaurant = Restaurant::find($request->input('nome'));
-        $restaurant->name = $request->input('nome');
-        $restaurant->localizacao=$request->input('localizacao');
-        $restaurant->longitude=$request->input('longitude');
-        $restaurant->latitude = $request->input('latitude');
-        $restaurant->capacidade=$request->input('capacidade');
-        $restaurant->horario=$request->input('horario');
-        return 'http://projetoengenharia3.localhost';
-    }
-
-//http://projetoengenharia.localhost
     public static function getAllRestaurants ()
     {
         $restaurants = Pesquisa::all();
@@ -78,41 +51,116 @@ class Pesquisa extends Model
 
         foreach ($restaurants as $restaurant) {
             $client = new Client(); //GuzzleHttp\Client
-            $result = $client->get("$restaurant->url/restaurants");
-
+            $result = $client->get("$restaurant->url/restaurantes");
             foreach (json_decode((string) $result->getBody()) as $response) {
                 array_push($results, $response);
             }
         }
+
     return $results;
     }
 
-    public static function getRestaurants ()
+
+
+
+    public static function getAllEmentas ()
     {
+        $restaurants = Pesquisa::all();
+        $results = [];
+
+    foreach ($restaurants as $restaurant) {
+
+            $client = new Client(); //GuzzleHttp\Client
+            $result = $client->get("$restaurant->url/ementas");
+
+            foreach (json_decode((string) $result->getBody()) as $response) {
+                array_push($results, $response);
+
+            }
+        }
+
+        return $results;
+    }
+
+
+    public static function getRestaurants ($searchedValue)
+    {
+
         $restaurants = Pesquisa::all();
         $results = [];
 
         foreach ($restaurants as $restaurant) {
             $client = new Client(); //GuzzleHttp\Client
-            $result = $client->get("$restaurant->url/restaurants");
-
-            foreach (json_decode((string) $result->getBody()) as $response) {
+            $result = $client->get("$restaurant->url/restaurantes");
+                foreach (json_decode((string) $result->getBody()) as $response) {
                 array_push($results, $response);
             }
-        }
 
-        $searchedValue = 'Presto';
+        }
 
         $neededObject = array_filter(
             $results,
             function ($e) use (&$searchedValue) {
-                return strpos($e->name, $searchedValue) !== false;
+                return strpos($e->nome, $searchedValue) !== false;
             }
         );
+    return $neededObject;
+    }
 
-        //var_dump($neededObject);
 
+    public static function getLocal ($searchedValue)
+    {
+
+
+        $restaurants = Pesquisa::all();
+        $results = [];
+
+        foreach ($restaurants as $restaurant) {
+            $client = new Client(); //GuzzleHttp\Client
+            $result = $client->get("$restaurant->url/restaurantes");
+            foreach (json_decode((string) $result->getBody()) as $response) {
+                array_push($results, $response);
+            }
+
+        }
+
+        $neededObject = array_filter(
+            $results,
+            function ($e) use (&$searchedValue) {
+                return strpos($e->localizacao, $searchedValue) !== false;
+            }
+        );
         return $neededObject;
+    }
+
+    public static function getEmenta($searchedValue)
+    {
+        $ementas = Pesquisa::all();
+        $results = [];
+
+        foreach ($ementas as $ementa) {
+            $client = new Client(); //GuzzleHttp\Client
+            $result = $client->get("$ementa->url/ementas");
+            dd($result->getBody());
+            foreach (json_decode((string) $result->getBody()) as $response) {
+                array_push($results, $response);
+            }
+
+        }
+
+        $neededObject = array_filter(
+            $results,
+            function ($e) use (&$searchedValue) {
+                return strpos($e->ementa, $searchedValue) !== false;
+            }
+        );
+        return $neededObject;
+    }
+
+
+    public static function getTipoComida($searchedValue)
+    {
+
     }
 
     public static function getClienteDetails ($id)
@@ -123,7 +171,5 @@ class Pesquisa extends Model
     public static function getRandomCliente()
     {
         return Cliente::find(rand (1, Cliente::count()))->id;
-    }
-
-
+    }*/
 }
